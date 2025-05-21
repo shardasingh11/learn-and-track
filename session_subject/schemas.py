@@ -8,7 +8,7 @@ from session_subject.models import LearningStatus
 
 class SubjectCreate(BaseModel):
     subject_name: str = Field(..., min_length=1, max_length=100)
-    learning_status: LearningStatus = LearningStatus.NOT_STARTED
+    learning_status: LearningStatus = LearningStatus.IN_PROGRESS
 
     class Config:
         schema_extra = {

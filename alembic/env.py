@@ -10,7 +10,7 @@ import os
 import sys
 from db.base_class import Base
 from user.models import User, UserSubject
-from session_subject.models import Subject, SubjectSession
+from session_subject.models import Subject, SubjectSession, Topic, topic_session
 
 
 # this is the Alembic Config object, which provides
