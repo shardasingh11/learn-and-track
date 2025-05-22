@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from db.session import get_db
 from session_subject.models import LearningStatus, Subject
-from session_subject.schemas import SubjectCreate, SubjectResponse, SubjectStatusUpdate
-from .interface import create_subjects, update_subject_status_only
+from session_subject.schemas import CreateSessionRequest, CreateSessionResponse, SubjectCreate, SubjectResponse, SubjectStatusUpdate
+from .interface import create_session, create_subjects, update_subject_status_only
 
 router = APIRouter(prefix="/session-subject",tags=["session's-subject"])
 
@@ -26,3 +26,14 @@ def update_subject_status(
 ):
     
     return update_subject_status_only(db=db, status_update=status_update, subject_id=subject_id)
+
+
+
+@router.post("/create-sessions/", response_model=CreateSessionResponse)
+def create_subject_session(
+    session_data: CreateSessionRequest, 
+    db: Session = Depends(get_db)
+):
+
+    return create_session(db=db, session_data=session_data)
+   

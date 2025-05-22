@@ -53,8 +53,8 @@ class Topic(BaseModel):
 topic_session = Table(
     "topic_session",
     BaseModel.metadata,
-    Column("topic_id", Integer, ForeignKey("topics.id"), primary_key=True),
-    Column("session_id", Integer, ForeignKey("subject_sessions.id"), primary_key=True)
+    Column("topic_id", Integer, ForeignKey("topics.id", ondelete="CASCADE"), primary_key=True),
+    Column("session_id", Integer, ForeignKey("subject_sessions.id", ondelete="CASCADE"), primary_key=True)
 )
 
 # Now define the many-to-many relationships that use the junction table
