@@ -34,7 +34,9 @@ class SubjectSession(BaseModel):
     # Basic relationships
     user = relationship("User", back_populates="sub_sessions")
     subject = relationship("Subject", back_populates="sub_sessions")
-    # The topics relationship will be defined later
+    
+    # Many-to-many with Topic through TopicSession
+    topic_sessions = relationship("TopicSession", back_populates="session", cascade="all, delete-orphan")
 
 
 class Topic(BaseModel):
@@ -44,19 +46,18 @@ class Topic(BaseModel):
     topic_description = Column(Text)
     subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
     
-    # Basic relationship with Subject
+    # Relationships
     subject = relationship("Subject", back_populates="topics")
-    # The sessions relationship will be defined later
+    # Many-to-many with SubjectSession through TopicSession
+    topic_sessions = relationship("TopicSession", back_populates="topic", cascade="all, delete-orphan")
 
+class TopicSession(BaseModel):
+    __tablename__ = "topic_session"
 
-# Junction table - define AFTER all the models it references
-topic_session = Table(
-    "topic_session",
-    BaseModel.metadata,
-    Column("topic_id", Integer, ForeignKey("topics.id", ondelete="CASCADE"), primary_key=True),
-    Column("session_id", Integer, ForeignKey("subject_sessions.id", ondelete="CASCADE"), primary_key=True)
-)
+    topic_id = Column(Integer, ForeignKey("topics.id", ondelete="CASCADE"), primary_key=True)
+    session_id = Column(Integer, ForeignKey("subject_sessions.id", ondelete="CASCADE"), primary_key=True)
+    
 
-# Now define the many-to-many relationships that use the junction table
-Topic.sessions = relationship("SubjectSession", secondary=topic_session, back_populates="topics")
-SubjectSession.topics = relationship("Topic", secondary=topic_session, back_populates="sessions")
+    # Relationships
+    topic = relationship("Topic", back_populates="topic_sessions")
+    session = relationship("SubjectSession", back_populates="topic_sessions")

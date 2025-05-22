@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from session_subject.models import LearningStatus, Subject, SubjectSession, Topic, topic_session
+from session_subject.models import LearningStatus, Subject, SubjectSession, Topic, TopicSession
 from session_subject.schemas import CreateSessionRequest, SubjectCreate, SubjectStatusUpdate, TopicCreateOrGet
 
 
@@ -119,11 +119,8 @@ def create_session(db: Session, session_data: CreateSessionRequest):
         
         
         # Add to junction table
-        stmt = topic_session.insert().values(
-            topic_id=topic.id,
-            session_id=new_session.id
-        )
-        db.execute(stmt)
+        topic_session_obj = TopicSession(topic_id=topic.id, session_id=new_session.id)
+        db.add(topic_session_obj)
     
     db.commit()
     
