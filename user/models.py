@@ -40,7 +40,7 @@ class User(BaseModel):
    
      # Relationships with cascade
     subjects = relationship("UserSubject", back_populates="user", cascade="all, delete-orphan")
-    sub_sessions = relationship("SubjectSession", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("SubjectSession", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserSubject(BaseModel):

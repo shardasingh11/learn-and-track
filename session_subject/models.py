@@ -18,7 +18,7 @@ class Subject(BaseModel):
     
     # Relationships with cascade - these are fine to define here
     users = relationship("UserSubject", back_populates="subject", cascade="all, delete-orphan")
-    sub_sessions = relationship("SubjectSession", back_populates="subject", cascade="all, delete-orphan")
+    sessions = relationship("SubjectSession", back_populates="subject", cascade="all, delete-orphan")
     topics = relationship("Topic", back_populates="subject", cascade="all, delete-orphan")
 
 
@@ -32,8 +32,8 @@ class SubjectSession(BaseModel):
     total_time = Column(Integer, nullable=True)  # Stored in minutes
    
     # Basic relationships
-    user = relationship("User", back_populates="sub_sessions")
-    subject = relationship("Subject", back_populates="sub_sessions")
+    user = relationship("User", back_populates="sessions")
+    subject = relationship("Subject", back_populates="sessions")
     
     # Many-to-many with Topic through TopicSession
     topic_sessions = relationship("TopicSession", back_populates="session", cascade="all, delete-orphan")
