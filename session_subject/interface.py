@@ -18,10 +18,7 @@ def create_subjects(db: Session, subject: SubjectCreate):
     learning_status = LearningStatus[subject.learning_status.value.upper()]
     
     # Create new subject
-    new_subject = Subject(
-        subject_name=subject.subject_name,
-        learning_status=learning_status
-    )
+    new_subject = Subject(user_id=subject.user_id, subject_name=subject.subject_name, learning_status=learning_status)
     
     db.add(new_subject)
     db.commit()
@@ -79,7 +76,9 @@ def get_or_create_topic(db: Session, topic_data: TopicCreateOrGet) -> Topic:
             subject_id=topic_data.subject_id
         )
         db.add(topic)
-        db.flush()
+        db.commit()
+        db.refresh(topic)
+        
     
     return topic
 
@@ -100,7 +99,8 @@ def create_session(db: Session, session_data: CreateSessionRequest):
     )
     
     db.add(new_session)
-    db.flush()
+    db.commit()
+    db.refresh(new_session)
     
     # Create or link topics
     topics = []
@@ -122,7 +122,6 @@ def create_session(db: Session, session_data: CreateSessionRequest):
         topic_session_obj = TopicSession(topic_id=topic.id, session_id=new_session.id)
         db.add(topic_session_obj)
     
-    db.commit()
     
     # Return response with session details
     response = {

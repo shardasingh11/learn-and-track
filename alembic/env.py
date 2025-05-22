@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from db.session import DATABASE_URL
 
 from db.base_class import Base
-from user.models import User, UserSubject
+from user.models import User
 from session_subject.models import Subject, SubjectSession, Topic, TopicSession
 
 # this is the Alembic Config object, which provides

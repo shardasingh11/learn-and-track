@@ -39,17 +39,5 @@ class User(BaseModel):
     user_role = Column(Enum(LearnerUserRole), nullable=False, default=LearnerUserRole.USER)
    
      # Relationships with cascade
-    subjects = relationship("UserSubject", back_populates="user", cascade="all, delete-orphan")
+    subjects = relationship("Subject", back_populates="user", cascade="all, delete-orphan")
     sessions = relationship("SubjectSession", back_populates="user", cascade="all, delete-orphan")
-
-
-class UserSubject(BaseModel):
-    __tablename__ = "user_subjects"
-
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
-   
-    
-    # Relationships
-    user = relationship("User", back_populates="subjects")
-    subject = relationship("Subject", back_populates="users")

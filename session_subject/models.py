@@ -13,11 +13,12 @@ class LearningStatus(enum.Enum):
 class Subject(BaseModel):
     __tablename__ = "subjects"
 
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     subject_name = Column(String, unique=True, index=True, nullable=False)
     learning_status = Column(Enum(LearningStatus), default=LearningStatus.IN_PROGRESS)
     
     # Relationships with cascade - these are fine to define here
-    users = relationship("UserSubject", back_populates="subject", cascade="all, delete-orphan")
+    user = relationship("User", back_populates="subjects")
     sessions = relationship("SubjectSession", back_populates="subject", cascade="all, delete-orphan")
     topics = relationship("Topic", back_populates="subject", cascade="all, delete-orphan")
 
@@ -25,8 +26,8 @@ class Subject(BaseModel):
 class SubjectSession(BaseModel):
     __tablename__ = "subject_sessions"
 
-    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     start_time = Column(DateTime(timezone=True), nullable=False)
     end_time = Column(DateTime(timezone=True), nullable=True)
     total_time = Column(Integer, nullable=True)  # Stored in minutes
@@ -44,7 +45,7 @@ class Topic(BaseModel):
 
     topic_name = Column(String, nullable=False)
     topic_description = Column(Text)
-    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
     
     # Relationships
     subject = relationship("Subject", back_populates="topics")
@@ -54,8 +55,18 @@ class Topic(BaseModel):
 class TopicSession(BaseModel):
     __tablename__ = "topic_session"
 
-    topic_id = Column(Integer, ForeignKey("topics.id", ondelete="CASCADE"), primary_key=True)
-    session_id = Column(Integer, ForeignKey("subject_sessions.id", ondelete="CASCADE"), primary_key=True)
+    topic_id = Column(
+        Integer, 
+        ForeignKey("topics.id", ondelete="CASCADE"), 
+        nullable=False, 
+        index=True
+    )
+    session_id = Column(
+        Integer, 
+        ForeignKey("subject_sessions.id", ondelete="CASCADE"), 
+        nullable=False, 
+        index=True
+    )
     
 
     # Relationships
