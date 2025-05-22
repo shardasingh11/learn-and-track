@@ -46,8 +46,8 @@ class User(BaseModel):
 class UserSubject(BaseModel):
     __tablename__ = "user_subjects"
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
    
     
     # Relationships
