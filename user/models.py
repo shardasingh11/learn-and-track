@@ -18,6 +18,10 @@ class UseType(enum.Enum):
     PERSONAL = "personal"
     WORK = "work"
 
+class LearnerUserRole(enum.Enum):
+    USER = "user"
+    ADMIN = "admin"
+
 
 class User(BaseModel):
     __tablename__ = "users"
@@ -32,19 +36,8 @@ class User(BaseModel):
     phone_no = Column(String(20), unique=True, nullable=False)
     password = Column(String, nullable=False)  # Should be hashed
     is_profile_created = Column(Boolean, default=False)
+    user_role = Column(Enum(LearnerUserRole), nullable=False, default=LearnerUserRole.USER)
    
      # Relationships with cascade
-    subjects = relationship("UserSubject", back_populates="user", cascade="all, delete-orphan")
-    sub_sessions = relationship("SubjectSession", back_populates="user", cascade="all, delete-orphan")
-
-
-class UserSubject(BaseModel):
-    __tablename__ = "user_subjects"
-
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
-   
-    
-    # Relationships
-    user = relationship("User", back_populates="subjects")
-    subject = relationship("Subject", back_populates="users")
+    subjects = relationship("Subject", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("SubjectSession", back_populates="user", cascade="all, delete-orphan")

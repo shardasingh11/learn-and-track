@@ -1,11 +1,12 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from session_subject.models import LearningStatus, Subject, SubjectSession, Topic, topic_session
+from session_subject.models import LearningStatus, Subject, SubjectSession, Topic, TopicSession
 from session_subject.schemas import CreateSessionRequest, SubjectCreate, SubjectStatusUpdate, TopicCreateOrGet
+from user.models import User
 
 
 
-def create_subjects(db: Session, subject: SubjectCreate):
+def create_subjects(db: Session, subject: SubjectCreate, user_id: int):
      # Check if subject with the same name already exists
     db_subject = db.query(Subject).filter(Subject.subject_name == subject.subject_name).first()
     if db_subject:
@@ -13,15 +14,10 @@ def create_subjects(db: Session, subject: SubjectCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Subject with name '{subject.subject_name}' already exists"
         )
-    
-    # Convert Pydantic enum to SQLAlchemy enum
-    learning_status = LearningStatus[subject.learning_status.value.upper()]
+
     
     # Create new subject
-    new_subject = Subject(
-        subject_name=subject.subject_name,
-        learning_status=learning_status
-    )
+    new_subject = Subject(**subject.model_dump(), user_id=user_id)
     
     db.add(new_subject)
     db.commit()
@@ -43,9 +39,8 @@ def update_subject_status_only(
             detail=f"Subject with ID {subject_id} not found"
         )
     
-    # Update only the learning status
-    learning_status = LearningStatus[status_update.learning_status.value.upper()]
-    subject.learning_status = learning_status # type: ignore
+   
+    subject.learning_status = status_update.learning_status  # type: ignore
     
     db.commit()
     db.refresh(subject)
@@ -79,11 +74,21 @@ def get_or_create_topic(db: Session, topic_data: TopicCreateOrGet) -> Topic:
             subject_id=topic_data.subject_id
         )
         db.add(topic)
-        db.flush()
+        db.commit()
+        db.refresh(topic)
+        
     
     return topic
 
-def create_session(db: Session, session_data: CreateSessionRequest):
+def create_session(db: Session, session_data: CreateSessionRequest, user_id: int):
+
+    db_user = db.query(User).filter(User.id == user_id).first()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User not found for given user id {user_id}"
+        )
      # Create a new session with all data at once
 
     db_subject = db.query(Subject).filter(Subject.id == session_data.subject_id).first()
@@ -91,16 +96,19 @@ def create_session(db: Session, session_data: CreateSessionRequest):
     if not db_subject:
         raise HTTPException(status_code=404, detail="Subject not found")
 
+
+
     new_session = SubjectSession(
         subject_id=session_data.subject_id,
-        user_id=session_data.user_id,
+        user_id=user_id,
         start_time=session_data.start_time,
         end_time=session_data.end_time,
         total_time=session_data.total_time  # Frontend calculates this or backend calculates it
     )
     
     db.add(new_session)
-    db.flush()
+    db.commit()
+    db.refresh(new_session)
     
     # Create or link topics
     topics = []
@@ -119,13 +127,9 @@ def create_session(db: Session, session_data: CreateSessionRequest):
         
         
         # Add to junction table
-        stmt = topic_session.insert().values(
-            topic_id=topic.id,
-            session_id=new_session.id
-        )
-        db.execute(stmt)
+        topic_session_obj = TopicSession(topic_id=topic.id, session_id=new_session.id)
+        db.add(topic_session_obj)
     
-    db.commit()
     
     # Return response with session details
     response = {
