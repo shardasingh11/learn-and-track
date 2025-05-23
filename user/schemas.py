@@ -3,10 +3,9 @@ from typing import Optional
 from enum import Enum
 from datetime import datetime
 
-from user.models import ProfileType, UseType
+from user.models import LearnerUserRole, ProfileType, UseType
 
-
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str
     first_name: str
     last_name: str
@@ -15,14 +14,21 @@ class UserCreate(BaseModel):
     profile_description: ProfileType
     use_type: UseType
     phone_no: str = Field(..., max_length=20)
+    user_role: LearnerUserRole
+
+class UserCreate(UserBase):
     password: str
+    user_role: LearnerUserRole = LearnerUserRole.USER
     
 
 
-class UserResponse(UserCreate):
+class UserResponse(UserBase):
     id: int
     is_profile_created: bool
   
 
     class Config:
         orm_mode = True
+
+class UserDB(UserResponse):
+    pass
